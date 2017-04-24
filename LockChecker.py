@@ -6,13 +6,12 @@ import time
 import requests # http request lib
 import gmail
 import bme280
-
-iftttKey = "************"
+import Settings
 
 def sendTrigger(triggerName):
     tempData = bme280.readData
     datalist = {"key1": tempData[0], "key2": tempData[1], "key3": tempData[2]}
-    reqStr = "https://maker.ifttt.com/trigger/" + triggerName + "/with/key/" + iftttKey
+    reqStr = "https://maker.ifttt.com/trigger/" + triggerName + "/with/key/" + IFTTT_KEY
     
     requests.post(reqStr, json=datalist)
 
@@ -39,30 +38,36 @@ while True:
     if (countWait == 10):
         countWait = 0
         orderMail = gmail.check()
-        if (orderMail[0] == 'checkdoor'):
+        
+        if (orderMail[0] == 'check'):
+            print ("Mail Command: checkdoor")
             if (switchNew == 0):
                 sendTrigger("Lock")
             else:
                 sendTrigger("Unlock")
+        
+        if (orderMail[0] == 'unlockcheck'):
+            print ("Mail Command: isopen")
+            if (switchNew == 0):
+                sendTrigger("Unlock")
     
     if( switchNew != switchBackup ):
         if (switchNew == 0):
-            sendTrigger("Locked")
             print ("Locked.")
+            sendTrigger("Locked")
             countOpen = 0
         else:
-            sendTrigger("Unocked")
             print ("Unlocked.")
+            sendTrigger("Unocked")
         
         switchBackup = switchNew
         
     else:
         if (switchNew == 1):
-            countOpen = countOpen + 1
-        
-        if (countOpen == 3000):
-            countOpen = 0
-            sendTrigger("Lock")
+            if (countOpen < 3000):
+                countOpen = countOpen + 1
+                if (countOpen == 3000):
+                    sendTrigger("Lock")
     
     time.sleep(1)
 
