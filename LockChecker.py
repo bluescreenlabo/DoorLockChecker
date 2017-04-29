@@ -14,25 +14,6 @@ def sendTrigger(triggerName):
     reqStr = "https://maker.ifttt.com/trigger/" + triggerName + "/with/key/" + Settings.IFTTT_KEY
     requests.post(reqStr, json=datalist)
 
-ChatCount = 0
-InputState = 0
-def cancelChattering(data):
-    global ChatCount
-    global InputState
-    if (data == 0):
-        if (ChatCount > 1):
-            ChatCount = ChatCount - 1
-    
-    else:
-        if (ChatCount < 5):
-            ChatCount = ChatCount + 1
-    
-    if (ChatCount == 0):
-        InputState = 0
-    if (ChatCount == 5):
-        InputState = 1
-    return InputState
-
 switchPin = 18      # input
 switchBackup = 0    # for detect edge
 countWait = 0
@@ -42,8 +23,6 @@ GPIO.setmode(GPIO.BCM)          # GPIO.BCM:GPIO number select / GPIO.BOARD:Board
 GPIO.setup(switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # set to input
 
 while True:
-    #switchNew = cancelChattering(GPIO.input(switchPin))
-    
     switchNew = GPIO.input(switchPin)
     
     countWait = countWait + 1
