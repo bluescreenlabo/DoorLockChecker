@@ -7,9 +7,9 @@ import time
 import Settings
 
 def check():
-    ret = []
+    lines = []
     mail = imaplib.IMAP4_SSL('imap.gmail.com', 993)
-    mail.login(LOGIN_USER, LOGIN_PASS)
+    mail.login(Settings.LOGIN_USER, Settings.LOGIN_PASS)
     mail.list()
     mail.select('inbox')
     # New Mail?
@@ -21,12 +21,11 @@ def check():
             # Get Subject
             subject = email.Header.decode_header(msg.get('Subject'))
             text, charset = subject[0]
-            if text[0:len(REMOTE_SUBJECT)] == REMOTE_SUBJECT:
+            if text[0:len(Settings.REMOTE_SUBJECT)] == Settings.REMOTE_SUBJECT:
                 # Get Body
                 for part in msg.walk():
                     if part.get_content_type() == 'text/plain':
                         lines = part.get_payload().splitlines()
-                        ret.append(lines)
                         break
     mail.logout()
-    return ret
+    return lines

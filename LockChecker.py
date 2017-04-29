@@ -11,45 +11,38 @@ import Settings
 def sendTrigger(triggerName):
     tempData = bme280.readData
     datalist = {"key1": tempData[0], "key2": tempData[1], "key3": tempData[2]}
-    reqStr = "https://maker.ifttt.com/trigger/" + triggerName + "/with/key/" + IFTTT_KEY
+    reqStr = "https://maker.ifttt.com/trigger/" + triggerName + "/with/key/" + Settings.IFTTT_KEY
     
     requests.post(reqStr, json=datalist)
-
 
 switchPin = 18      # input
 switchBackup = 0    # for detect edge
 countWait = 0
 countOpen = 0
 
-GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)          # GPIO.BCM:GPIO number select / GPIO.BOARD:Board pin number select
-GPIO.setup(switchPin, GPIO.IN)  # set to input
+GPIO.setup(switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # set to input
 
 while True:
-    switchNew = 0
-    switchNew1 = 1
-    while (switchNew != switchNew1):
-        switchNew = GPIO.input(switchPin)
-        time.sleep(0.01)
-        switchNew1 = GPIO.input(switchPin)
+    switchNew = GPIO.input(switchPin)
     
     countWait = countWait + 1
     
     if (countWait == 10):
         countWait = 0
         orderMail = gmail.check()
-        
-        if (orderMail[0] == 'check'):
-            print ("Mail Command: checkdoor")
-            if (switchNew == 0):
-                sendTrigger("Lock")
-            else:
-                sendTrigger("Unlock")
-        
-        if (orderMail[0] == 'unlockcheck'):
-            print ("Mail Command: isopen")
-            if (switchNew == 0):
-                sendTrigger("Unlock")
+        if (len(orderMail) != 0):
+            if (orderMail[0] == 'check'):
+                print("Mail Command: checkdoor")
+                if (switchNew == 0):
+                    sendTrigger("Lock")
+                else:
+                    sendTrigger("Unlock")
+            
+            if (orderMail[0] == 'unlockcheck'):
+                print ("Mail Command: isopen")
+                if (switchNew == 0):
+                    sendTrigger("Unlock")
     
     if( switchNew != switchBackup ):
         if (switchNew == 0):
