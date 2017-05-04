@@ -26,6 +26,17 @@ def check():
                 for part in msg.walk():
                     if part.get_content_type() == 'text/plain':
                         lines = part.get_payload().splitlines()
+                        while (True):
+                            try:
+                                lines.remove("")
+                            except:
+                                break
                         break
     mail.logout()
     return lines
+
+if __name__ == '__main__':
+    try:
+        check()
+    except KeyboardInterrupt:
+        pass

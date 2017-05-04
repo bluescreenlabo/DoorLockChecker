@@ -50,7 +50,7 @@ while True:
             countOpen = 0
         else:
             print ("Unlocked.")
-            sendTrigger("Unocked")
+            sendTrigger("Unlocked")
         
         switchBackup = switchNew
         
