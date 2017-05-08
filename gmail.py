@@ -33,6 +33,8 @@ def check():
                                 break
                         break
     mail.logout()
+    if (len(lines) == 0):
+        lines.append("none")
     return lines
 
 if __name__ == '__main__':

@@ -2,64 +2,55 @@
 #coding: utf-8
 
 import RPi.GPIO as GPIO
-import time
-import requests # http request lib
+import threading
 import gmail
-import bme280
-import Settings
+import ifttt
+import checkTiming
 
-def sendTrigger(triggerName):
-    tempData = bme280.readData()
-    datalist = {"value1": tempData[0], "value2": tempData[1], "value3": tempData[2]}
-    reqStr = "https://maker.ifttt.com/trigger/" + triggerName + "/with/key/" + Settings.IFTTT_KEY
-    requests.post(reqStr, json=datalist)
+switchPin = 18		# input pin number
 
-switchPin = 18      # input
-switchBackup = 0    # for detect edge
-countWait = 0
-countOpen = 0
+#----------------------------------------------------------------------*/
+# @brief	ÉÅÉCÉìèàóù
+#----------------------------------------------------------------------*/
+def checkMain():
+	t = threading.Timer(1, checkMain)
+	t.start()
+	
+	switchNew = GPIO.input(switchPin)
+	
+	if (c.checkMail() == 1):
+		orderMail = gmail.check()
+		if (orderMail[0] == 'check'):
+			print("Mail Command: %s" % orderMail[0])
+			if (switchNew == 0):
+				ifttt.sendTrigger("Lock")
+			else:
+				ifttt.sendTrigger("Unlock")
+		
+		if (orderMail[0] == 'unlockcheck'):
+			print("Mail Command: %s" % orderMail[0])
+			if (switchNew == 1):
+				ifttt.sendTrigger("Unlock")
+	
+	if (c.isEdge(switchNew) == 1):
+		if (switchNew == 0):
+			ifttt.sendTrigger("Locked")
+		else:
+			ifttt.sendTrigger("Unlocked")
+		
+	else:
+		if (c.isOpen(switchNew) == 1):
+			ifttt.sendTrigger("Unlock")
 
-GPIO.setmode(GPIO.BCM)          # GPIO.BCM:GPIO number select / GPIO.BOARD:Board pin number select
-GPIO.setup(switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # set to input
 
-while True:
-    switchNew = GPIO.input(switchPin)
-    
-    countWait = countWait + 1
-    
-    if (countWait == 10):
-        countWait = 0
-        orderMail = gmail.check()
-        if (len(orderMail) != 0):
-            if (orderMail[0] == 'check'):
-                print("Mail Command: checkdoor")
-                if (switchNew == 0):
-                    sendTrigger("Lock")
-                else:
-                    sendTrigger("Unlock")
-            
-            if (orderMail[0] == 'unlockcheck'):
-                print ("Mail Command: isopen")
-                if (switchNew == 0):
-                    sendTrigger("Unlock")
-    
-    if( switchNew != switchBackup ):
-        if (switchNew == 0):
-            print ("Locked.")
-            sendTrigger("Locked")
-            countOpen = 0
-        else:
-            print ("Unlocked.")
-            sendTrigger("Unlocked")
-        
-        switchBackup = switchNew
-        
-    else:
-        if (switchNew == 1):
-            if (countOpen < 3000):
-                countOpen = countOpen + 1
-                if (countOpen == 3000):
-                    sendTrigger("Lock")
-    
-    time.sleep(1)
+#----------------------------------------------------------------------*/
+# @brief	èâä˙âª
+#----------------------------------------------------------------------*/
+if __name__=='__main__':
+	GPIO.setmode(GPIO.BCM)			# GPIO.BCM:GPIO number select / GPIO.BOARD:Board pin number select
+	GPIO.setup(switchPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # set to input
+	
+	c = checkTiming.checkTiming(15, 3000)
+	t = threading.Thread(target=checkMain)
+	t.start()
 
