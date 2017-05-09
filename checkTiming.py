@@ -2,21 +2,10 @@
 #coding: utf-8
 
 class checkTiming:
-	def __init__(self, checkMailWait=15, checkOpen=3000):
+	def __init__(self, checkOpen=3000):
 		self.switchBackup = 0	# for detect edge
-		self.countWait = 0		# gmail check count
 		self.countOpen = 0
-		self.checkMailWait = checkMailWait
 		self.checkOpen = checkOpen
-	
-	def checkMail(self):
-		ret = 0
-		if (self.countWait < self.checkMailWait):
-			self.countWait = self.countWait + 1
-		else:
-			self.countWait = 0
-			ret = 1
-		return ret
 	
 	def isEdge(self, new):
 		ret = 0
