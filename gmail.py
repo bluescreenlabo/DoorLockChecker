@@ -32,6 +32,7 @@ def check():
                             except:
                                 break
                         break
+    mail.close()
     mail.logout()
     if (len(lines) == 0):
         lines.append("none")
