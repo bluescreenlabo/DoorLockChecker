@@ -7,6 +7,7 @@ import time
 import gmail
 import ifttt
 import checkTiming
+import Settings
 
 switchPin = 18		# input pin number
 
@@ -14,23 +15,38 @@ switchPin = 18		# input pin number
 # @brief	Check Edge
 #----------------------------------------------------------------------*/
 def checkMail():
-	orderMail = gmail.check()
-	if (orderMail[0] != 'none'):
-		print("Mail Command: %s" % orderMail[0])
+	tm = threading.Timer(20, checkMail)
+	tm.start()
+	
+	Gmail = gmail.GmailClient(Settings.LOGIN_USER, Settings.LOGIN_PASS)
+	
+	orderMail = Gmail.getMail()
+	
+	subject = orderMail['subject']
+	if subject != Settings.REMOTE_SUBJECT:
+		return
+	
+	lines = orderMail['body']
+	while (True):
+		try:
+			lines.remove("")
+		except:
+			break
+	
+	if (len(lines) != 0):
+		print("Mail Command: %s" % lines[0])
 		switchNew = GPIO.input(switchPin)
 	
-	if (orderMail[0] == 'check'):
+	if (lines[0] == 'check'):
 		if (switchNew == 0):
 			ifttt.sendTrigger("Lock")
 		else:
 			ifttt.sendTrigger("Unlock")
 	
-	elif (orderMail[0] == 'unlockcheck'):
+	elif (lines[0] == 'unlockcheck'):
 		if (switchNew == 1):
 			ifttt.sendTrigger("Unlock")
 	
-	tm = threading.Timer(15, checkMail)
-	tm.start()
 
 
 #----------------------------------------------------------------------*/
